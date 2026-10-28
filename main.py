@@ -56,3 +56,8 @@ def system_health():
         @app.get("/", response_class=HTMLResponse)
         def serve_index_view(request: Request):
             return templates.TemplateResponse("index.html", {"request": request})
+            @app.get("/admin", response_class=HTMLResponse)
+            def serve_admin_view(request: Request):
+                missions = query_all_missions()
+                return templates.TemplateResponse("admin.html", {"request": request, "missions": missions})
+                

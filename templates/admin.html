@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroSORA Auditor Console</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/css/aerospace.css">
+</head>
+<body class="min-h-screen p-4 md:p-8">
+  <div class="max-w-6xl mx-auto">
+    <div class="flex items-center justify-between pb-4 mb-6 border-b border-slate-800">
+      <div>
+        <h1 class="text-xl font-bold text-white">Chief Remote Pilot // Airworthiness Audit Registry</h1>
+        <p class="mono-spec text-xs text-slate-500 mt-1">PERSISTENT AUDIT TRAIL OF ALL LOGGED MISSIONS (EASA / CAA SORA)</p>
+      </div>
+      <a href="/" class="mono-spec text-xs px-3 py-1.5 rounded bg-slate-900 border border-slate-700 hover:border-sky-500 text-slate-300 transition">
+        ← BACK TO COCKPIT
+      </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="panel-card p-4 rounded">
+        <p class="mono-spec text-[10px] text-slate-500 uppercase">Missions Triaged</p>
+        <p class="text-2xl font-bold text-white mt-1 mono-spec">{{ missions | length }}</p>
+      </div>
+      <div class="panel-card p-4 rounded">
+        <p class="mono-spec text-[10px] text-slate-500 uppercase">Mean Fleet Risk Index</p>
+        <p class="text-2xl font-bold text-amber-400 mt-1 mono-spec">
+          {% if missions %}
+            {{ (missions | map(attribute='risk_index') | sum / (missions | length)) | round(1) }}
+          {% else %}
+            0.0
+          {% endif %}
+        </p>
+      </div>
+      <div class="panel-card p-4 rounded">
+        <p class="mono-spec text-[10px] text-slate-500 uppercase">Specific Category (SORA Critical)</p>
+        <p class="text-2xl font-bold text-red-400 mt-1 mono-spec">
+          {{ missions | selectattr('risk_index', 'ge', 70) | list | length }}
+        </p>
+      </div>
+    </div>
+
+    <div class="panel-card rounded-lg overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-950 text-slate-400 mono-spec uppercase border-b border-slate-800">
+          <tr>
+            <th class="p-3">Timestamp (UTC)</th>
+            <th class="p-3">Pilot ID</th>
+            <th class="p-3">Airframe</th>
+            <th class="p-3">Mission Label</th>
+            <th class="p-3">Mass</th>
+            <th class="p-3">Altitude</th>
+            <th class="p-3">Classification</th>
+            <th class="p-3">Risk</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/50 text-slate-300">
+          {% for m in missions %}
+          <tr class="hover:bg-slate-900/50">
+            <td class="p-3 mono-spec text-slate-500">{{ m.timestamp }}</td>
+            <td class="p-3 mono-spec text-slate-300">{{ m.pilot_id }}</td>
+            <td class="p-3 mono-spec text-sky-400">{{ m.uas_callsign }}</td>
+            <td class="p-3 text-slate-200">{{ m.mission_label }}</td>
+            <td class="p-3 mono-spec">{{ m.mtow_kg }} kg</td>
+            <td class="p-3 mono-spec">{{ m.altitude_m }} m</td>
+            <td class="p-3">
+              <span class="mono-spec text-[10px] px-2 py-0.5 rounded border {% if m.risk_index >= 70 %}bg-red-950/80 text-red-400 border-red-800{% elif m.risk_index >= 40 %}bg-amber-950/80 text-amber-400 border-amber-800{% else %}bg-emerald-950/80 text-emerald-400 border-emerald-800{% endif %}">
+                {{ m.operational_category }}
+              </span>
+            </td>
+            <td class="p-3 mono-spec font-bold text-white">{{ m.risk_index }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
