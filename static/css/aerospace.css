@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+  --bg-cockpit: #080C14;
+  --panel-surface: #0E1524;
+  --panel-border: #1E293B;
+  --status-pass: #10B981;
+  --status-warn: #F59E0B;
+  --status-fail: #EF4444;
+}
+
+body {
+  background-color: var(--bg-cockpit);
+  font-family: 'Inter', sans-serif;
+  color: #E2E8F0;
+}
+
+.mono-spec {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.panel-card {
+  background: var(--panel-surface);
+  border: 1px solid var(--panel-border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.glow-pass {
+  border-left: 4px solid var(--status-pass);
+}
+
+.glow-warn {
+  border-left: 4px solid var(--status-warn);
+}
+
+.glow-fail {
+  border-left: 4px solid var(--status-fail);
+}

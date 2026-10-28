@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroSORA // UAS Regulatory Safety Console</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/css/aerospace.css">
+</head>
+<body class="min-h-screen p-4 md:p-8">
+  <div class="max-w-6xl mx-auto">
+    <header class="flex flex-col md:flex-row md:items-center justify-between pb-4 mb-6 border-b border-slate-800 gap-4">
+      <div>
+        <div class="flex items-center space-x-3">
+          <div class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+          <span class="mono-spec text-xs tracking-widest text-sky-400 font-semibold uppercase">SYS: ACTIVE // CAP 722 COMPLIANCE CORE</span>
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight text-white mt-1">AeroSORA <span class="text-slate-500 font-normal">| UAS Pre-Flight Triage Engine</span></h1>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="/admin" class="mono-spec text-xs px-4 py-2 rounded bg-slate-900 border border-slate-700 hover:border-sky-500 text-slate-300 transition">
+          SAFETY AUDIT LOGS →
+        </a>
+      </div>
+    </header>
+
+    <div class="flex items-center gap-2 mb-4 overflow-x-auto pb-1 text-xs">
+      <span class="mono-spec text-slate-500">QUICK LOADS:</span>
+      <button onclick="loadScenario('safe')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300">Scenario A: Agricultural Survey (Safe)</button>
+      <button onclick="loadScenario('warn')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300">Scenario B: Urban Roof Survey (A2 Margin)</button>
+      <button onclick="loadScenario('breach')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300">Scenario C: High-Altitude Airport Vicinity (Breach)</button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-5 panel-card rounded-lg p-5">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+          <span class="mono-spec text-xs font-semibold text-slate-400 uppercase tracking-wider">FLIGHT PLAN INGESTION</span>
+          <span class="mono-spec text-[10px] text-slate-500">FORMAT: UNSTRUCTURED TEXT</span>
+        </div>
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block mono-spec text-[10px] text-slate-400 uppercase mb-1">Pilot Certificate ID</label>
+              <input id="pilot_id" type="text" value="GBR-RP-44021" class="w-full bg-slate-950 border border-slate-800 rounded p-2 mono-spec text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block mono-spec text-[10px] text-slate-400 uppercase mb-1">Airframe / Tail</label>
+              <input id="uas_callsign" type="text" value="QUAD-M4-PRO" class="w-full bg-slate-950 border border-slate-800 rounded p-2 mono-spec text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+            </div>
+          </div>
+          <div>
+            <label class="block mono-spec text-[10px] text-slate-400 uppercase mb-1">Mission Operation Title</label>
+            <input id="mission_label" type="text" value="Bridge Cable Photogrammetry" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block mono-spec text-[10px] text-slate-400 uppercase mb-1">Raw Operational Briefing</label>
+            <textarea id="brief_text" rows="6" class="w-full bg-slate-950 border border-slate-800 rounded p-2.5 text-xs text-slate-300 focus:border-sky-500 focus:outline-none leading-relaxed"></textarea>
+          </div>
+          <button id="triageBtn" onclick="evaluateMission()" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-semibold py-2.5 rounded text-xs tracking-wider uppercase transition">
+            EXECUTE REGULATORY AUDIT
+          </button>
+        </div>
+      </div>
+
+      <div id="outputDeck" class="lg:col-span-7 panel-card rounded-lg p-5 flex flex-col justify-center items-center text-center">
+        <div class="mono-spec text-slate-500 text-xs">
+          AWAITING MISSION SUBMISSION // SYSTEM STANDBY
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const scenarios = {
+      safe: "Conducting an automated boundary map of agricultural canola fields in Northumberland. Aircraft takeoff mass is 1.2kg. Maximum operating altitude capped at 60m AGL. Remote rural estate with zero uninvolved persons within 300 meters. Clear Visual Line of Sight maintained throughout. Nearest airport is over 22km away.",
+      warn: "Performing a rooftop gutter inspection on a commercial building in Jesmond. Drone mass is 2.2kg. Max altitude 40 meters. Footpaths are nearby with around 8 pedestrians walking within 25 meters of the building perimeter. Visual line of sight is held with an assistant observer. No airport nearby.",
+      breach: "Inspecting an industrial communications antenna adjacent to Newcastle Airport boundary. Planned survey flight climbing to 165 meters (540 feet) AGL to cover the antenna array. Drone weight is 5.5kg carrying a dual LiDAR sensor. Operations will be carried out over public roads."
+    };
+
+    function loadScenario(type) {
+      document.getElementById('brief_text').value = scenarios[type];
+      if(type === 'safe') document.getElementById('mission_label').value = "Farmland Boundary Mapping";
+      if(type === 'warn') document.getElementById('mission_label').value = "Commercial Roof Inspection";
+      if(type === 'breach') document.getElementById('mission_label').value = "Airport Vicinity Mast Inspection";
+    }
+
+    loadScenario('safe');
+
+    async function evaluateMission() {
+      const btn = document.getElementById('triageBtn');
+      const out = document.getElementById('outputDeck');
+      btn.innerText = "TRIAGING AIRWORTHINESS...";
+      btn.disabled = true;
+
+      const payload = {
+        pilot_id: document.getElementById('pilot_id').value,
+        uas_callsign: document.getElementById('uas_callsign').value,
+        mission_label: document.getElementById('mission_label').value,
+        raw_flight_brief: document.getElementById('brief_text').value
+      };
+
+      try {
+        const res = await fetch('/api/v1/triage', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        const t = data.telemetry;
+        const e = data.evaluation;
+
+        let glowClass = "glow-pass";
+        let badgeColor = "bg-emerald-950 text-emerald-400 border-emerald-800";
+        if (e.risk_index >= 70) {
+          glowClass = "glow-fail";
+          badgeColor = "bg-red-950 text-red-400 border-red-800";
+        } else if (e.risk_index >= 40) {
+          glowClass = "glow-warn";
+          badgeColor = "bg-amber-950 text-amber-400 border-amber-800";
+        }
+
+        out.innerHTML = `
+          <div class="w-full text-left space-y-4">
+            <div class="p-4 bg-slate-950 rounded border border-slate-800 ${glowClass} flex items-center justify-between">
+              <div>
+                <p class="mono-spec text-[10px] text-slate-500 uppercase tracking-widest">AIRWORTHINESS DIRECTIVE</p>
+                <p class="text-sm font-bold text-white mt-0.5">${e.flight_decision}</p>
+              </div>
+              <div class="text-right">
+                <span class="mono-spec text-xs px-2.5 py-1 rounded border font-semibold ${badgeColor}">RISK: ${e.risk_index}/100</span>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-950 rounded border border-slate-800 flex justify-between items-center text-xs">
+              <span class="text-slate-400">Civil Aviation Classification:</span>
+              <span class="mono-spec font-bold text-sky-400">${e.operational_category}</span>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <div class="p-2.5 bg-slate-950 rounded border border-slate-800">
+                <p class="mono-spec text-[9px] text-slate-500 uppercase">Mass (MTOW)</p>
+                <p class="mono-spec text-xs font-bold text-slate-200 mt-0.5">${t.mtow_kg} kg</p>
+              </div>
+              <div class="p-2.5 bg-slate-950 rounded border border-slate-800">
+                <p class="mono-spec text-[9px] text-slate-500 uppercase">Peak Altitude</p>
+                <p class="mono-spec text-xs font-bold text-slate-200 mt-0.5">${t.planned_altitude_m} m</p>
+              </div>
+              <div class="p-2.5 bg-slate-950 rounded border border-slate-800">
+                <p class="mono-spec text-[9px] text-slate-500 uppercase">Crowd Buffer</p>
+                <p class="mono-spec text-xs font-bold ${t.over_uninvolved_people ? 'text-amber-400' : 'text-slate-200'} mt-0.5">${t.over_uninvolved_people ? 'EXPOSED' : 'ISOLATED'}</p>
+              </div>
+              <div class="p-2.5 bg-slate-950 rounded border border-slate-800">
+                <p class="mono-spec text-[9px] text-slate-500 uppercase">Line of Sight</p>
+                <p class="mono-spec text-xs font-bold ${t.visual_line_of_sight ? 'text-slate-200' : 'text-red-400'} mt-0.5">${t.visual_line_of_sight ? 'VLOS' : 'BVLOS'}</p>
+              </div>
+            </div>
+
+            ${e.violations.length > 0 ? `
+              <div class="p-3 bg-red-950/40 rounded border border-red-900/60">
+                <p class="mono-spec text-[10px] text-red-400 uppercase tracking-widest font-bold">SAFETY ENVELOPE BREACHES DETECTED</p>
+                <ul class="mt-1 space-y-1 text-xs text-red-300 list-disc list-inside">
+                  ${e.violations.map(v => `<li>${v}</li>`).join('')}
+                </ul>
+              </div>
+            ` : ''}
+
+            <div class="p-3 bg-slate-950 rounded border border-slate-800">
+              <p class="mono-spec text-[10px] text-emerald-400 uppercase tracking-widest font-bold">MANDATORY FLIGHT ACTIONS</p>
+              <ul class="mt-1.5 space-y-1.5 text-xs text-slate-300">
+                ${e.directives.map(d => `<li class="flex items-start gap-2"><span class="text-sky-500 font-bold mono-spec">»</span><span>${d}</span></li>`).join('')}
+              </ul>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        out.innerHTML = `<p class="mono-spec text-xs text-red-400">ERROR: TRIAGE PIPELINE FAILED TO RESPOND.</p>`;
+      } finally {
+        btn.innerText = "EXECUTE REGULATORY AUDIT";
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

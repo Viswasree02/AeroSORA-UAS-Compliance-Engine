@@ -53,3 +53,6 @@ def system_health():
             "telemetry": telemetry,
             "evaluation": evaluation
         }
+        @app.get("/", response_class=HTMLResponse)
+        def serve_index_view(request: Request):
+            return templates.TemplateResponse("index.html", {"request": request})
