@@ -27,3 +27,29 @@ def system_health():
         "regulatory_framework": "UK CAA CAP 722 / JARUS SORA v2.5",
         "database": "SQLite Connected"
     }
+    from ai_parser import extract_mission_telemetry
+    from logic_layer import evaluate_airworthiness_risk
+
+    @app.post("/api/v1/triage")
+    def run_triage(payload: MissionPayload):
+        telemetry = extract_mission_telemetry(payload.raw_flight_brief)
+        evaluation = evaluate_airworthiness_risk(telemetry)
+
+        persist_mission(
+            pilot_id=payload.pilot_id,
+            callsign=payload.uas_callsign,
+            label=payload.mission_label,
+            mtow=telemetry["mtow_kg"],
+            alt=telemetry["planned_altitude_m"],
+            crowd=1 if telemetry["over_uninvolved_people"] else 0,
+            score=evaluation["risk_index"],
+            category=evaluation["operational_category"],
+            decision=evaluation["flight_decision"],
+            directives_json=json.dumps(evaluation["directives"])
+        )
+
+        return {
+            "status": "PROCESSED",
+            "telemetry": telemetry,
+            "evaluation": evaluation
+        }
