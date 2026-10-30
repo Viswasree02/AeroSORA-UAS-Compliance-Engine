@@ -3,180 +3,271 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AeroSORA // UAS Regulatory Safety Console</title>
+  <title>AeroSORA — UAS Regulatory Safety & Pre-Flight Triage</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="/static/css/aerospace.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: radial-gradient(circle at 50% 0%, #0d1527 0%, #050811 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+    .heading-font { font-family: 'Space Grotesk', sans-serif; }
+    .mono-font { font-family: 'JetBrains Mono', monospace; }
+    .glass-panel {
+      background: rgba(13, 21, 39, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+    .radar-grid {
+      background-size: 24px 24px;
+      background-image: 
+        linear-gradient(to right, rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+    }
+  </style>
 </head>
-<body class="min-h-screen p-4 md:p-8">
-  <div class="max-w-6xl mx-auto">
-    <header class="flex flex-col md:flex-row md:items-center justify-between pb-4 mb-6 border-b border-slate-800 gap-4">
-      <div>
-        <div class="flex items-center space-x-3">
-          <div class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
-          <span class="mono-spec text-xs tracking-widest text-sky-400 font-semibold uppercase">SYS: ACTIVE // CAP 722 COMPLIANCE CORE</span>
+<body class="radar-grid antialiased">
+  <nav class="border-b border-slate-800/80 bg-slate-950/60 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-lg bg-sky-500/10 border border-sky-400/30 flex items-center justify-center text-sky-400 shadow-inner">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
         </div>
-        <h1 class="text-2xl font-bold tracking-tight text-white mt-1">AeroSORA <span class="text-slate-500 font-normal">| UAS Pre-Flight Triage Engine</span></h1>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="heading-font font-bold text-lg text-white tracking-tight">AeroSORA</span>
+            <span class="text-[10px] mono-font uppercase bg-sky-500/10 border border-sky-400/30 text-sky-300 px-2 py-0.5 rounded font-semibold">UK CAA CAP 722</span>
+          </div>
+          <p class="text-xs text-slate-400 -mt-0.5">Automated Airworthiness & JARUS SORA Assessment Engine</p>
+        </div>
       </div>
       <div class="flex items-center gap-3">
-        <a href="/admin" class="mono-spec text-xs px-4 py-2 rounded bg-slate-900 border border-slate-700 hover:border-sky-500 text-slate-300 transition">
-          SAFETY AUDIT LOGS →
+        <div class="hidden md:flex items-center gap-2 text-xs text-slate-400 mono-font pr-3 border-r border-slate-800">
+          <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          ENGINE ACTIVE
+        </div>
+        <a href="/admin" class="mono-font text-xs font-medium px-4 py-2 rounded-lg bg-slate-900 border border-slate-700/80 hover:border-sky-500 text-slate-200 hover:text-white transition flex items-center gap-2 shadow-sm">
+          <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          Auditor Logs
         </a>
       </div>
-    </header>
+    </div>
+  </nav>
 
-    <div class="flex items-center gap-2 mb-4 overflow-x-auto pb-1 text-xs">
-      <span class="mono-spec text-slate-500">QUICK LOADS:</span>
-      <button onclick="loadScenario('safe')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300">Scenario A: Agricultural Survey (Safe)</button>
-      <button onclick="loadScenario('warn')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300">Scenario B: Urban Roof Survey (A2 Margin)</button>
-      <button onclick="loadScenario('breach')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300">Scenario C: High-Altitude Airport Vicinity (Breach)</button>
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h2 class="heading-font text-xl font-bold text-white">Pre-Flight Dispatch Triage</h2>
+        <p class="text-sm text-slate-400">Submit operational flight briefs to determine regulatory category and airspace airworthiness.</p>
+      </div>
+      <div class="flex items-center gap-2 text-xs">
+        <span class="mono-font text-slate-400 font-semibold mr-1">Load Flight Scenario:</span>
+        <button onclick="injectPreset('safe')" class="px-3 py-1.5 rounded-md bg-slate-800/80 border border-slate-700 hover:border-emerald-500 hover:text-emerald-300 text-slate-300 transition mono-font">Scenario A: Farmland Survey</button>
+        <button onclick="injectPreset('warn')" class="px-3 py-1.5 rounded-md bg-slate-800/80 border border-slate-700 hover:border-amber-500 hover:text-amber-300 text-slate-300 transition mono-font">Scenario B: Urban Façade</button>
+        <button onclick="injectPreset('breach')" class="px-3 py-1.5 rounded-md bg-slate-800/80 border border-slate-700 hover:border-red-500 hover:text-red-300 text-slate-300 transition mono-font">Scenario C: Airfield Breach</button>
+      </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <div class="lg:col-span-5 panel-card rounded-lg p-5">
-        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
-          <span class="mono-spec text-xs font-semibold text-slate-400 uppercase tracking-wider">FLIGHT PLAN INGESTION</span>
-          <span class="mono-spec text-[10px] text-slate-500">FORMAT: UNSTRUCTURED TEXT</span>
-        </div>
-        <div class="space-y-4">
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block mono-spec text-[10px] text-slate-400 uppercase mb-1">Pilot Certificate ID</label>
-              <input id="pilot_id" type="text" value="GBR-RP-44021" class="w-full bg-slate-950 border border-slate-800 rounded p-2 mono-spec text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div class="lg:col-span-5 space-y-6">
+        <div class="glass-panel rounded-xl p-6">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300 mb-4 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+            Mission Parameters
+          </h3>
+
+          <form id="triageForm" onsubmit="event.preventDefault(); runTriage();" class="space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-slate-400 mb-1">Pilot Certificate ID</label>
+                <input id="pilot_id" type="text" required placeholder="e.g. GBR-RP-10492" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-sky-500 mono-font">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-400 mb-1">UAS Airframe Tail</label>
+                <input id="uas_callsign" type="text" required placeholder="e.g. SKY-OCTO-04" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-sky-500 mono-font">
+              </div>
             </div>
+
             <div>
-              <label class="block mono-spec text-[10px] text-slate-400 uppercase mb-1">Airframe / Tail</label>
-              <input id="uas_callsign" type="text" value="QUAD-M4-PRO" class="w-full bg-slate-950 border border-slate-800 rounded p-2 mono-spec text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+              <label class="block text-xs font-medium text-slate-400 mb-1">Mission Operation Title</label>
+              <input id="mission_label" type="text" required placeholder="e.g. Offshore Wind Blade Photogrammetry" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-sky-500">
             </div>
-          </div>
-          <div>
-            <label class="block mono-spec text-[10px] text-slate-400 uppercase mb-1">Mission Operation Title</label>
-            <input id="mission_label" type="text" value="Bridge Cable Photogrammetry" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
-          </div>
-          <div>
-            <label class="block mono-spec text-[10px] text-slate-400 uppercase mb-1">Raw Operational Briefing</label>
-            <textarea id="brief_text" rows="6" class="w-full bg-slate-950 border border-slate-800 rounded p-2.5 text-xs text-slate-300 focus:border-sky-500 focus:outline-none leading-relaxed"></textarea>
-          </div>
-          <button id="triageBtn" onclick="evaluateMission()" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-semibold py-2.5 rounded text-xs tracking-wider uppercase transition">
-            EXECUTE REGULATORY AUDIT
-          </button>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="block text-xs font-medium text-slate-400">Pilot's Flight Plan Briefing</label>
+                <span class="text-[10px] text-slate-500 mono-font">Unstructured Text</span>
+              </div>
+              <textarea id="raw_brief" rows="6" required placeholder="Describe takeoff point, intended altitude, drone weight, proximity to roads/people, airspace restrictions, and line of sight..." class="w-full bg-slate-900/90 border border-slate-700/80 rounded-lg p-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-sky-500 leading-relaxed"></textarea>
+            </div>
+
+            <button type="submit" id="submitBtn" class="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-semibold text-sm shadow-lg shadow-sky-500/20 transition flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              <span>Audit Operational Airworthiness</span>
+            </button>
+          </form>
         </div>
       </div>
 
-      <div id="outputDeck" class="lg:col-span-7 panel-card rounded-lg p-5 flex flex-col justify-center items-center text-center">
-        <div class="mono-spec text-slate-500 text-xs">
-          AWAITING MISSION SUBMISSION // SYSTEM STANDBY
+      <div class="lg:col-span-7">
+        <div id="resultsDeck" class="glass-panel rounded-xl p-8 min-h-[500px] flex flex-col items-center justify-center text-center">
+          <div class="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-600 mb-4">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          </div>
+          <h4 class="text-base font-semibold text-slate-300">Ready for Assessment</h4>
+          <p class="text-xs text-slate-500 max-w-sm mt-1">Select a scenario above or enter a flight brief to extract telemetry and verify CAP 722 compliance.</p>
         </div>
       </div>
     </div>
-  </div>
+  </main>
 
   <script>
-    const scenarios = {
-      safe: "Conducting an automated boundary map of agricultural canola fields in Northumberland. Aircraft takeoff mass is 1.2kg. Maximum operating altitude capped at 60m AGL. Remote rural estate with zero uninvolved persons within 300 meters. Clear Visual Line of Sight maintained throughout. Nearest airport is over 22km away.",
-      warn: "Performing a rooftop gutter inspection on a commercial building in Jesmond. Drone mass is 2.2kg. Max altitude 40 meters. Footpaths are nearby with around 8 pedestrians walking within 25 meters of the building perimeter. Visual line of sight is held with an assistant observer. No airport nearby.",
-      breach: "Inspecting an industrial communications antenna adjacent to Newcastle Airport boundary. Planned survey flight climbing to 165 meters (540 feet) AGL to cover the antenna array. Drone weight is 5.5kg carrying a dual LiDAR sensor. Operations will be carried out over public roads."
+    const presets = {
+      safe: {
+        pilot: "GBR-RP-77401",
+        tail: "DJI-MINI-4P",
+        title: "Northumberland Agricultural Canopy Mapping",
+        text: "Executing automated orthomosaic scan over an isolated canola crop field in rural Northumberland. Airframe mass is 0.249kg (sub-250g class). Operating ceiling is 50 meters AGL. Zero uninvolved persons within 200 meters. Continuous Visual Line of Sight held by remote pilot. Nearest aerodrome is Newcastle Airport, located 28km southwest."
+      },
+      warn: {
+        pilot: "GBR-RP-51920",
+        tail: "MATRICE-30T",
+        title: "City Center Commercial Roof Survey",
+        text: "Conducting thermal envelope survey on a 6-story building façade in central Newcastle. Takeoff mass is 3.8kg. Flight ceiling maintained at 45m AGL. Public pedestrian footpaths exist within 25m of the perimeter, requiring an A2 certified pilot. Direct line of sight held with a trained spotter."
+      },
+      breach: {
+        pilot: "GBR-RP-29104",
+        tail: "FREEFLY-ALTA-X",
+        title: "Avionics Mast Survey - Airport Approach Zone",
+        text: "Conducting sensor calibration on a telemetry mast 800 meters from Newcastle International Airport runway 07 threshold. Heavy-lift hexacopter weighing 14.5kg with LiDAR gimbal. Ascent planned to 165 meters (540 feet) AGL directly across active commercial airspace and public bypass highway."
+      }
     };
 
-    function loadScenario(type) {
-      document.getElementById('brief_text').value = scenarios[type];
-      if(type === 'safe') document.getElementById('mission_label').value = "Farmland Boundary Mapping";
-      if(type === 'warn') document.getElementById('mission_label').value = "Commercial Roof Inspection";
-      if(type === 'breach') document.getElementById('mission_label').value = "Airport Vicinity Mast Inspection";
+    function injectPreset(key) {
+      const data = presets[key];
+      document.getElementById('pilot_id').value = data.pilot;
+      document.getElementById('uas_callsign').value = data.tail;
+      document.getElementById('mission_label').value = data.title;
+      document.getElementById('raw_brief').value = data.text;
     }
 
-    loadScenario('safe');
+    async function runTriage() {
+      const btn = document.getElementById('submitBtn');
+      const deck = document.getElementById('resultsDeck');
 
-    async function evaluateMission() {
-      const btn = document.getElementById('triageBtn');
-      const out = document.getElementById('outputDeck');
-      btn.innerText = "TRIAGING AIRWORTHINESS...";
       btn.disabled = true;
-
-      const payload = {
-        pilot_id: document.getElementById('pilot_id').value,
-        uas_callsign: document.getElementById('uas_callsign').value,
-        mission_label: document.getElementById('mission_label').value,
-        raw_flight_brief: document.getElementById('brief_text').value
-      };
+      btn.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        <span>Extracting Telemetry & Triaging...</span>
+      `;
 
       try {
+        const payload = {
+          pilot_id: document.getElementById('pilot_id').value,
+          uas_callsign: document.getElementById('uas_callsign').value,
+          mission_label: document.getElementById('mission_label').value,
+          raw_flight_brief: document.getElementById('raw_brief').value
+        };
+
         const res = await fetch('/api/v1/triage', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(payload)
         });
+
         const data = await res.json();
         const t = data.telemetry;
         const e = data.evaluation;
 
-        let glowClass = "glow-pass";
-        let badgeColor = "bg-emerald-950 text-emerald-400 border-emerald-800";
+        let statusBg, statusBorder, statusText, riskBadge;
         if (e.risk_index >= 70) {
-          glowClass = "glow-fail";
-          badgeColor = "bg-red-950 text-red-400 border-red-800";
+          statusBg = "bg-rose-950/40";
+          statusBorder = "border-rose-600/40";
+          statusText = "text-rose-400";
+          riskBadge = "bg-rose-500/20 text-rose-300 border-rose-500/40";
         } else if (e.risk_index >= 40) {
-          glowClass = "glow-warn";
-          badgeColor = "bg-amber-950 text-amber-400 border-amber-800";
+          statusBg = "bg-amber-950/40";
+          statusBorder = "border-amber-600/40";
+          statusText = "text-amber-400";
+          riskBadge = "bg-amber-500/20 text-amber-300 border-amber-500/40";
+        } else {
+          statusBg = "bg-emerald-950/40";
+          statusBorder = "border-emerald-600/40";
+          statusText = "text-emerald-400";
+          riskBadge = "bg-emerald-500/20 text-emerald-300 border-emerald-500/40";
         }
 
-        out.innerHTML = `
-          <div class="w-full text-left space-y-4">
-            <div class="p-4 bg-slate-950 rounded border border-slate-800 ${glowClass} flex items-center justify-between">
-              <div>
-                <p class="mono-spec text-[10px] text-slate-500 uppercase tracking-widest">AIRWORTHINESS DIRECTIVE</p>
-                <p class="text-sm font-bold text-white mt-0.5">${e.flight_decision}</p>
+        deck.className = "glass-panel rounded-xl p-6 text-left space-y-6";
+        deck.innerHTML = `
+          <div class="p-5 rounded-lg border ${statusBg} ${statusBorder} flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <p class="text-[10px] mono-font uppercase tracking-widest text-slate-400 font-semibold">Triage Disposition</p>
+              <h3 class="heading-font text-lg font-bold text-white mt-1">${e.flight_decision}</h3>
+              <p class="text-xs ${statusText} font-medium mt-0.5">${e.operational_category}</p>
+            </div>
+            <div class="flex items-center gap-2 self-start sm:self-center">
+              <span class="mono-font text-xs font-bold px-3 py-1.5 rounded-lg border ${riskBadge}">
+                RISK SCORE: ${e.risk_index} / 100
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2.5">Extracted Flight Telemetry</h4>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div class="bg-slate-900/80 border border-slate-800 rounded-lg p-3">
+                <span class="text-[10px] mono-font text-slate-500 uppercase">Airframe MTOW</span>
+                <p class="text-sm font-bold text-white mono-font mt-0.5">${t.mtow_kg} kg</p>
               </div>
-              <div class="text-right">
-                <span class="mono-spec text-xs px-2.5 py-1 rounded border font-semibold ${badgeColor}">RISK: ${e.risk_index}/100</span>
+              <div class="bg-slate-900/80 border border-slate-800 rounded-lg p-3">
+                <span class="text-[10px] mono-font text-slate-500 uppercase">Peak Ceiling</span>
+                <p class="text-sm font-bold ${t.planned_altitude_m > 120 ? 'text-rose-400' : 'text-white'} mono-font mt-0.5">${t.planned_altitude_m} m AGL</p>
+              </div>
+              <div class="bg-slate-900/80 border border-slate-800 rounded-lg p-3">
+                <span class="text-[10px] mono-font text-slate-500 uppercase">Ground Assembly</span>
+                <p class="text-sm font-bold ${t.over_uninvolved_people ? 'text-amber-400' : 'text-slate-300'} mono-font mt-0.5">${t.over_uninvolved_people ? 'CROWD VICINITY' : 'ISOLATED'}</p>
+              </div>
+              <div class="bg-slate-900/80 border border-slate-800 rounded-lg p-3">
+                <span class="text-[10px] mono-font text-slate-500 uppercase">Visual Line of Sight</span>
+                <p class="text-sm font-bold ${t.visual_line_of_sight ? 'text-emerald-400' : 'text-rose-400'} mono-font mt-0.5">${t.visual_line_of_sight ? 'VLOS ACTIVE' : 'BVLOS DETECTED'}</p>
               </div>
             </div>
+          </div>
 
-            <div class="p-3 bg-slate-950 rounded border border-slate-800 flex justify-between items-center text-xs">
-              <span class="text-slate-400">Civil Aviation Classification:</span>
-              <span class="mono-spec font-bold text-sky-400">${e.operational_category}</span>
-            </div>
-
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-              <div class="p-2.5 bg-slate-950 rounded border border-slate-800">
-                <p class="mono-spec text-[9px] text-slate-500 uppercase">Mass (MTOW)</p>
-                <p class="mono-spec text-xs font-bold text-slate-200 mt-0.5">${t.mtow_kg} kg</p>
-              </div>
-              <div class="p-2.5 bg-slate-950 rounded border border-slate-800">
-                <p class="mono-spec text-[9px] text-slate-500 uppercase">Peak Altitude</p>
-                <p class="mono-spec text-xs font-bold text-slate-200 mt-0.5">${t.planned_altitude_m} m</p>
-              </div>
-              <div class="p-2.5 bg-slate-950 rounded border border-slate-800">
-                <p class="mono-spec text-[9px] text-slate-500 uppercase">Crowd Buffer</p>
-                <p class="mono-spec text-xs font-bold ${t.over_uninvolved_people ? 'text-amber-400' : 'text-slate-200'} mt-0.5">${t.over_uninvolved_people ? 'EXPOSED' : 'ISOLATED'}</p>
-              </div>
-              <div class="p-2.5 bg-slate-950 rounded border border-slate-800">
-                <p class="mono-spec text-[9px] text-slate-500 uppercase">Line of Sight</p>
-                <p class="mono-spec text-xs font-bold ${t.visual_line_of_sight ? 'text-slate-200' : 'text-red-400'} mt-0.5">${t.visual_line_of_sight ? 'VLOS' : 'BVLOS'}</p>
-              </div>
-            </div>
-
-            ${e.violations.length > 0 ? `
-              <div class="p-3 bg-red-950/40 rounded border border-red-900/60">
-                <p class="mono-spec text-[10px] text-red-400 uppercase tracking-widest font-bold">SAFETY ENVELOPE BREACHES DETECTED</p>
-                <ul class="mt-1 space-y-1 text-xs text-red-300 list-disc list-inside">
-                  ${e.violations.map(v => `<li>${v}</li>`).join('')}
-                </ul>
-              </div>
-            ` : ''}
-
-            <div class="p-3 bg-slate-950 rounded border border-slate-800">
-              <p class="mono-spec text-[10px] text-emerald-400 uppercase tracking-widest font-bold">MANDATORY FLIGHT ACTIONS</p>
-              <ul class="mt-1.5 space-y-1.5 text-xs text-slate-300">
-                ${e.directives.map(d => `<li class="flex items-start gap-2"><span class="text-sky-500 font-bold mono-spec">»</span><span>${d}</span></li>`).join('')}
+          ${e.violations && e.violations.length > 0 ? `
+            <div class="p-4 rounded-lg bg-rose-950/20 border border-rose-900/40">
+              <h4 class="text-xs font-bold text-rose-400 uppercase tracking-wider mono-font mb-2">Hard Envelope Violations</h4>
+              <ul class="space-y-1.5 text-xs text-rose-200">
+                ${e.violations.map(v => `<li class="flex items-start gap-2"><span class="text-rose-500 font-bold">✕</span><span>${v}</span></li>`).join('')}
               </ul>
             </div>
+          ` : ''}
+
+          <div class="p-4 rounded-lg bg-slate-900/80 border border-slate-800">
+            <h4 class="text-xs font-bold text-sky-400 uppercase tracking-wider mono-font mb-2">Mandatory Operational Directives</h4>
+            <ul class="space-y-2 text-xs text-slate-300">
+              ${e.directives.map(d => `<li class="flex items-start gap-2"><span class="text-sky-400 font-bold">›</span><span>${d}</span></li>`).join('')}
+            </ul>
           </div>
         `;
       } catch (err) {
-        out.innerHTML = `<p class="mono-spec text-xs text-red-400">ERROR: TRIAGE PIPELINE FAILED TO RESPOND.</p>`;
+        deck.className = "glass-panel rounded-xl p-8 min-h-[500px] flex flex-col items-center justify-center text-center";
+        deck.innerHTML = `
+          <div class="w-12 h-12 rounded-full bg-rose-950 border border-rose-800 text-rose-400 flex items-center justify-center mb-3">✕</div>
+          <h4 class="text-sm font-semibold text-white">Evaluation Engine Error</h4>
+          <p class="text-xs text-slate-400 mt-1 max-w-sm">Failed to connect to triage pipeline. Ensure server is running.</p>
+        `;
       } finally {
-        btn.innerText = "EXECUTE REGULATORY AUDIT";
         btn.disabled = false;
+        btn.innerHTML = `
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          <span>Audit Operational Airworthiness</span>
+        `;
       }
     }
   </script>
